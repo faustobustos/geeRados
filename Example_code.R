@@ -1,5 +1,9 @@
 ### Example code to generate point-wise, quantile-based, cluster bootstrap-based, 95% CIs for a GEE model of infection ~ age
 
+
+library(geepack)
+library(boot)
+
 #Generate fake dataset
 set.seed(100)
 practice <- as.data.frame(matrix(NA, nrow=3000, ncol=6))
@@ -12,15 +16,15 @@ practice$female <- round(runif(3000, 0, 1), 0)
 practice$other_var <- runif(3000, 1, 5000)
 
 #Getting code for legend boxes
-source("http://www.math.mcmaster.ca/bolker/R/misc/legendx.R")
+x <- source("http://www.math.mcmaster.ca/bolker/R/misc/legendx.R")
 
 #Setting up the color function
 add.alpha <- function(col, alpha=1){
   if(missing(col))
     stop("Please provide a vector of colours.")
-  apply(sapply(col, col2rgb)/255, 2, 
-        function(x) 
-          rgb(x[1], x[2], x[3], alpha=alpha))  
+  apply(sapply(col, col2rgb)/255, 2,
+        function(x)
+          rgb(x[1], x[2], x[3], alpha=alpha))
 }
 
 #The model of interest
@@ -35,9 +39,10 @@ practice2 <- dplyr::select(practice, age, id, everinf, homeid_cohort) #subset DF
 practice2 <- practice2[order(practice2$homeid_cohort),] #order the DF by the clustering variable
 clusters332 <- names(table(practice2$homeid_cohort)) #vector of names of clustering variable
 set.seed(5000) #set seed
-full_set <- as.data.frame(matrix(NA, nrow=length(2:14), ncol=10000)) #create DF to hold answers
+nbs <- 100 #set number of times to do the cluster bootstrap
+full_set <- as.data.frame(matrix(NA, nrow=length(2:14), ncol=nbs)) #create DF to hold answers
 rownames(full_set) <- 2:14 #age ranges from 2-14 in this case
-colnames(full_set) <- paste("Model", seq(1:10000), sep=" ") #model results from 10,000 models
+colnames(full_set) <- paste("Model", seq(1:nbs), sep=" ") #model results from 10,000 models
 nbs <- 100 #set number of times to do the cluster bootstrap
 
 #Running the cluster bootstrap
