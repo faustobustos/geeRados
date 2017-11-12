@@ -1,16 +1,5 @@
 ### Example code to generate point-wise, quantile-based, cluster bootstrap-based, 95% CIs for a GEE model of infection ~ age
 
-#Generate fake dataset
-set.seed(100)
-practice <- as.data.frame(matrix(NA, nrow=3000, ncol=6))
-names(practice) <- c("id", "homeid_cohort", "age", "everinf", "female", "other_var")
-practice$id <- seq(1:3000)
-practice$homeid_cohort <- round(runif(3000, 1, 300), 0)
-practice$age <- round(runif(3000, 2, 14), 0)
-practice$everinf <- round(runif(3000, 0, 1), 0)
-practice$female <- round(runif(3000, 0, 1), 0)
-practice$other_var <- runif(3000, 1, 5000)
-
 #Getting code for legend boxes
 source("http://www.math.mcmaster.ca/bolker/R/misc/legendx.R")
 
@@ -24,8 +13,8 @@ add.alpha <- function(col, alpha=1){
 }
 
 #The model of interest
-gee_no2 <- geeglm(everinf ~ age, family=binomial, data=practice, id=homeid_cohort, corstr = "exchangeable", std.err="san.se", scale.fix = TRUE)
-summary(gee_no2)
+gee_no <- geeglm(everinf ~ age, family=binomial, data=practice, id=homeid_cohort, corstr = "exchangeable", std.err="san.se", scale.fix = TRUE)
+
 
 
 #CI for GEE_no univariate curve
@@ -38,7 +27,7 @@ set.seed(5000) #set seed
 full_set <- as.data.frame(matrix(NA, nrow=length(2:14), ncol=10000)) #create DF to hold answers
 rownames(full_set) <- 2:14 #age ranges from 2-14 in this case
 colnames(full_set) <- paste("Model", seq(1:10000), sep=" ") #model results from 10,000 models
-nbs <- 100 #set number of times to do the cluster bootstrap
+nbs <- 10000 #set number of times to do the cluster bootstrap
 
 #Running the cluster bootstrap
 for(i in 1:nbs){
@@ -91,7 +80,7 @@ salmon99 <- add.alpha("salmon", alpha=0.1)
 polygon(x, y90, col = salmon90, border=NA) #Get a polygon for the CIs across the range of the variable on the x axis
 polygon(x, y95, col = salmon95, border=NA)
 polygon(x, y99, col = salmon99, border=NA)
-lines(practice$age[order(practice$age)], predict(gee_no2, type="response")[order(practice$age)], col="black", lwd=2) #Plot the main curve
+lines(practice$age[order(practice$age)], predict(gee_no, type="response")[order(practice$age)], col="black", lwd=2) #Plot the main curve
 salmon90_2 <- add.alpha("salmon", alpha=0.6) #Define the color scheme for the legend's CIs
 salmon95_2 <- add.alpha("salmon", alpha=0.3)
 salmon99_2 <- add.alpha("salmon", alpha=0.1)
